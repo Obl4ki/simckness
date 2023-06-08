@@ -1,89 +1,26 @@
-use anyhow::{Result, anyhow};
-use parameters::{
-    HIGH_IMMUNITY_BARRIER_INCLUSIVE, LOW_IMMUNITY_BARRIER_INCLUSIVE, MAX_AGE,
-    MID_IMMUNITY_BARRIER_INCLUSIVE,
-};
-use random::rand_inclusive;
+use anyhow::Result;
+use constants::N_TURNS;
+use population::Population;
 
-mod parameters;
-mod random;
+mod constants;
+mod entities;
+mod population;
+mod gui;
 
-#[derive(Debug, PartialEq, Eq)]
-struct Position {
-    x: usize,
-    y: usize,
+fn main() -> Result<()> {
+    let mut history = vec![];
+
+    (0..N_TURNS).fold(Population::new(), |pop, turn_idx| {
+        history.push(pop.clone());
+        println!("turn number {}: num of entities: {}", turn_idx, pop.entities.len());
+        let g = pop.entities.iter().max_by(|e1, e2| e1.position.x.cmp(&e2.position.x));
+        println!("{g:#?}");
+        pop.advance()
+    });
+
+    history
+        .iter()
+        .for_each(|point| println!("{:?}\n", point.entities[0]));
+
+    Ok(())
 }
-
-#[derive(Debug, PartialEq, Eq)]
-struct Direction(usize, usize);
-
-#[derive(Debug, PartialEq, Eq)]
-enum HealthState {
-    Infected,
-    Sick,
-    Recovering,
-    Healthy,
-}
-
-#[derive(Debug, PartialEq, Eq)]
-struct Age(usize);
-
-#[derive(Debug, PartialEq, Eq)]
-enum Immunity {
-    Low { level: usize },
-    Normal { level: usize },
-    High { level: usize },
-}
-
-impl TryFrom<Age> for Immunity {
-    type Error = anyhow::Error;
-    fn try_from(value: Age) -> Result<Self, Self::Error> {
-        match value.0 {
-            1..=3 => Ok(Immunity::Low {
-                level: rand_inclusive(1, LOW_IMMUNITY_BARRIER_INCLUSIVE),
-            }),
-            4..=6 => Ok(Immunity::Normal {
-                level: rand_inclusive(
-                    LOW_IMMUNITY_BARRIER_INCLUSIVE + 1,
-                    MID_IMMUNITY_BARRIER_INCLUSIVE,
-                ),
-            }),
-            7..=10 => Ok(Immunity::High {
-                level: rand_inclusive(
-                    MID_IMMUNITY_BARRIER_INCLUSIVE + 1,
-                    HIGH_IMMUNITY_BARRIER_INCLUSIVE,
-                ),
-            }),
-            _ => Err(anyhow!("Panicked while getting immunity from age: {}", value.0)),
-        }
-    }
-}
-
-#[derive(Debug)]
-struct Entity {
-    position: Position,
-    speed: usize,
-    direction: Direction,
-    health: HealthState,
-    age: Age,
-    immunity: Immunity,
-}
-
-impl Entity {
-    pub fn new_random() -> Result<Self> {
-        let position = rand::random();
-        let age = Age(rand_inclusive(0, MAX_AGE));
-        let immunity = Immunity::try_from(age)?;
-        let health = rand::random();
-        Ok(Self {
-            position,
-            speed: todo!(),
-            direction: todo!(),
-            health,
-            age,
-            immunity,
-        })
-    }
-}
-
-fn main() {}
