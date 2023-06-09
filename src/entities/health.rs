@@ -16,7 +16,7 @@ impl HealthState {
     }
     pub fn new_infected() -> Self {
         Self::Infected {
-            days_until_sick: INFECTED_DAYS,
+            days_until_sick: INFECTED_DAYS - 1,
         }
     }
 

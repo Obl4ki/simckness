@@ -1,6 +1,6 @@
 use rand::{distributions::Standard, prelude::Distribution, Rng};
 
-use crate::constants::{INFECTED_DAYS, MAX_AGE_ON_START, N_CELLS, RECOVERY_DAYS, SICK_DAYS};
+use crate::constants::{MAX_AGE_ON_START, N_CELLS};
 
 use super::{
     age::Age, direction::Direction, health::HealthState, position::Position, speed::Speed,
@@ -36,16 +36,10 @@ impl Distribution<Position> for Standard {
 impl Distribution<HealthState> for Standard {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> HealthState {
         match rng.gen_range(0..=3) {
-            0 => HealthState::Healthy,
-            1 => HealthState::Infected {
-                days_until_sick: rng.gen_range(1..=INFECTED_DAYS),
-            },
-            2 => HealthState::Recovering {
-                days_until_healthy: rng.gen_range(1..=RECOVERY_DAYS),
-            },
-            _ => HealthState::Sick {
-                days_until_recovering: rng.gen_range(1..=SICK_DAYS),
-            },
+            0 => HealthState::new_healthy(),
+            1 => HealthState::new_infected(),
+            2 => HealthState::new_recovering(),
+            _ => HealthState::new_sick(),
         }
     }
 }

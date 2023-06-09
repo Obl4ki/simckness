@@ -49,9 +49,9 @@ impl Entity {
 
             self.position = Position { x: new_x, y: new_y };
         }
-        
+
         if self.position.x > N_CELLS {
-            self.position.x = N_CELLS -1;
+            self.position.x = N_CELLS - 1;
         }
         if self.position.y > N_CELLS {
             self.position.y = N_CELLS - 1;
@@ -214,12 +214,18 @@ impl Entity {
     }
 
     fn revert_direction_if_on_border(&mut self) {
-        if self.position.x == 0 || self.position.x == N_CELLS {
-            self.direction.x *= -1;
+        if self.position.x == 0 {
+            self.direction.x = 1;
+        }
+        if self.position.x == N_CELLS {
+            self.direction.x = 1;
         }
 
-        if self.position.y == 0 || self.position.y == N_CELLS {
-            self.direction.y *= -1;
+        if self.position.y == 0 {
+            self.direction.y = 1;
+        }
+        if self.position.y == N_CELLS {
+            self.direction.y = -1;
         }
     }
 
@@ -260,6 +266,10 @@ impl Entity {
         }
 
         self.clamp_immunity_by_age();
+    }
+
+    pub fn advance_health_by_day(&mut self) {
+        self.health = self.health.next();
     }
 
     pub fn give_birth_if_suitable(&mut self, other: &Entity) {

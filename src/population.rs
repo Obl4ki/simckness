@@ -35,7 +35,7 @@ impl Population {
             })
             .map(|mut entity| {
                 entity.apply_health_effect();
-                entity.clamp_immunity_by_age();
+                entity.advance_health_by_day();
                 entity
             })
             .flat_map(|mut entity| {
