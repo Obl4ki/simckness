@@ -1,6 +1,8 @@
-use rand::{distributions::Standard, prelude::Distribution, Rng};
+use rand::{distributions::Standard, prelude::Distribution, seq::SliceRandom, Rng};
 
-use crate::constants::{MAX_AGE_ON_START, N_CELLS};
+use crate::constants::{
+    INFECTED_ON_START_PROB, MAX_AGE_ON_START, N_CELLS, RECOVERING_ON_START_PROB, SICK_ON_START_PROB,
+};
 
 use super::{
     age::Age, direction::Direction, health::HealthState, position::Position, speed::Speed,
@@ -8,17 +10,17 @@ use super::{
 
 impl Distribution<Direction> for Standard {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Direction {
-        let x = match rng.gen_range(0..=2) {
-            0 => -1,
-            1 => 0,
-            _ => 1,
-        };
-
-        let y = match rng.gen_range(0..=2) {
-            0 => -1,
-            1 => 0,
-            _ => 1,
-        };
+        let possible_directions = vec![
+            (-1, -1),
+            (-1, 0),
+            (-1, 1),
+            (0, -1),
+            (0, 1),
+            (1, -1),
+            (1, 0),
+            (1, 1),
+        ];
+        let (x, y) = possible_directions.choose(rng).unwrap().to_owned();
 
         Direction { x, y }
     }
@@ -35,11 +37,18 @@ impl Distribution<Position> for Standard {
 
 impl Distribution<HealthState> for Standard {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> HealthState {
-        match rng.gen_range(0..=3) {
-            0 => HealthState::new_healthy(),
-            1 => HealthState::new_infected(),
-            2 => HealthState::new_recovering(),
-            _ => HealthState::new_sick(),
+        let healthy_on_start_prob =
+            1. - SICK_ON_START_PROB - INFECTED_ON_START_PROB - RECOVERING_ON_START_PROB;
+        let random_num = rng.gen::<f64>();
+
+        if random_num < healthy_on_start_prob {
+            HealthState::new_healthy()
+        } else if random_num < healthy_on_start_prob + SICK_ON_START_PROB {
+            HealthState::new_sick()
+        } else if random_num < healthy_on_start_prob + SICK_ON_START_PROB + INFECTED_ON_START_PROB {
+            HealthState::new_infected()
+        } else {
+            HealthState::new_recovering()
         }
     }
 }

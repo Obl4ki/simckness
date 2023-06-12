@@ -9,7 +9,7 @@ use super::speed::Speed;
 use anyhow::Result;
 use rand::distributions::Bernoulli;
 use rand::prelude::Distribution;
-use rand::thread_rng;
+use rand::{thread_rng, Rng};
 
 #[derive(Debug, Clone)]
 pub struct Entity {
@@ -279,7 +279,7 @@ impl Entity {
 
         let mut newborns = vec![];
 
-        for _ in 0..MAX_CHILDREN_PER_BIRTH {
+        for _ in 0..thread_rng().gen_range(1..=MAX_CHILDREN_PER_BIRTH) {
             let child_position = Position {
                 x: (self.position.x + other.position.x) / 2,
                 y: (self.position.y + other.position.y) / 2,
